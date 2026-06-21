@@ -22,6 +22,6 @@ public interface ShiftScheduleRepository extends JpaRepository<ShiftSchedule, UU
 
     List<ShiftSchedule> findByNightShiftTrueAndPersonnelId(UUID personnelId);
 
-    @Query("SELECT COUNT(ss) FROM ShiftSchedule ss JOIN CustomerPoint cp ON ss.customerPointId = cp.id WHERE cp.customerId = :customerId AND ss.scheduleDate BETWEEN :startDate AND :endDate AND ss.status = :status")
+    @Query(value = "SELECT COUNT(ss.id) FROM sec_shift_schedule ss JOIN sec_customer_point cp ON ss.customer_point_id = cp.id WHERE cp.customer_id = :customerId AND ss.schedule_date BETWEEN :startDate AND :endDate AND ss.status = :status", nativeQuery = true)
     Long countByCustomerIdAndScheduleDateBetweenAndStatus(@Param("customerId") UUID customerId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate, @Param("status") ScheduleStatus status);
 }

@@ -22,9 +22,9 @@ public interface PatrolEventRepository extends JpaRepository<PatrolEvent, UUID> 
 
     List<PatrolEvent> findByStatus(EventStatus status);
 
-    @Query("SELECT COUNT(pe) FROM PatrolEvent pe JOIN CustomerPoint cp ON pe.customerPointId = cp.id WHERE cp.customerId = :customerId AND pe.customerConfirmed = false")
+    @Query(value = "SELECT COUNT(pe.id) FROM sec_patrol_event pe JOIN sec_customer_point cp ON pe.customer_point_id = cp.id WHERE cp.customer_id = :customerId AND pe.customer_confirmed = false", nativeQuery = true)
     Long countUnconfirmedByCustomerId(@Param("customerId") UUID customerId);
 
-    @Query("SELECT pe FROM PatrolEvent pe JOIN CustomerPoint cp ON pe.customerPointId = cp.id WHERE cp.customerId = :customerId AND pe.eventTime BETWEEN :startTime AND :endTime")
+    @Query(value = "SELECT pe.* FROM sec_patrol_event pe JOIN sec_customer_point cp ON pe.customer_point_id = cp.id WHERE cp.customer_id = :customerId AND pe.event_time BETWEEN :startTime AND :endTime", nativeQuery = true)
     List<PatrolEvent> findByCustomerIdAndEventTimeBetween(@Param("customerId") UUID customerId, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
 }
