@@ -268,6 +268,12 @@
             {{ getPersonnelName(row.scheduleId) }}
           </template>
         </el-table-column>
+        <el-table-column label="换班" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag v-if="row.exchangeInfo" type="warning" size="small">已换班</el-tag>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
         <el-table-column label="金额" width="100" align="right">
           <template #default="{ row }">
             <span v-if="row.includedInSettlement" class="amount-included">

@@ -63,6 +63,9 @@ public class PatrolEvent {
     @Column(columnDefinition = "VARCHAR(20) DEFAULT 'OPEN'")
     private EventStatus status = EventStatus.OPEN;
 
+    @Transient
+    private ShiftExchange exchangeInfo;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

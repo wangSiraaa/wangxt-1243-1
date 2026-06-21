@@ -52,6 +52,12 @@ public class ShiftSchedule {
     @Column(columnDefinition = "TEXT")
     private String remarks;
 
+    @Column(name = "exchange_id", columnDefinition = "UUID")
+    private UUID exchangeId;
+
+    @Transient
+    private ShiftExchange exchangeInfo;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

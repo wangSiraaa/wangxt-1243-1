@@ -39,6 +39,9 @@ public class SettlementDetail {
     @Column(name = "exclusion_reason", columnDefinition = "TEXT")
     private String exclusionReason;
 
+    @Transient
+    private ShiftExchange exchangeInfo;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

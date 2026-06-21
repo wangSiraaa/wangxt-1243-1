@@ -96,6 +96,12 @@
             </el-tag>
           </template>
         </el-table-column>
+        <el-table-column label="班次换班" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag v-if="row.exchangeInfo" type="warning" size="small">已换班</el-tag>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="280" fixed="right">
           <template #default="{ row }">
             <el-button
@@ -230,6 +236,31 @@
             disabled
           />
         </el-form-item>
+        <el-divider v-if="isView && form.exchangeInfo" />
+        <div v-if="isView && form.exchangeInfo" class="exchange-info-section">
+          <h4 class="section-title">
+            <el-tag type="warning" size="small">班次已换班</el-tag>
+          </h4>
+          <el-descriptions :column="2" border size="small">
+            <el-descriptions-item label="换班原因">
+              {{ form.exchangeInfo.exchangeReason || '-' }}
+            </el-descriptions-item>
+            <el-descriptions-item label="审批状态">
+              <el-tag :type="form.exchangeInfo.status === 'APPROVED' ? 'success' : 'warning'">
+                {{ getExchangeStatusText(form.exchangeInfo.status) }}
+              </el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="申请时间">
+              {{ formatDateTime(form.exchangeInfo.createdAt) }}
+            </el-descriptions-item>
+            <el-descriptions-item label="审批时间">
+              {{ form.exchangeInfo.approvedAt ? formatDateTime(form.exchangeInfo.approvedAt) : '-' }}
+            </el-descriptions-item>
+            <el-descriptions-item label="审批意见">
+              {{ form.exchangeInfo.approvalRemarks || '-' }}
+            </el-descriptions-item>
+          </el-descriptions>
+        </div>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">关闭</el-button>
@@ -245,6 +276,21 @@
       width="500px"
       :close-on-click-modal="false"
     >
+      <div v-if="currentEvent?.exchangeInfo" class="confirm-exchange-info">
+        <el-alert
+          type="warning"
+          :closable="false"
+          show-icon
+          title="该班次已发生换班"
+        >
+          <template #default>
+            <div class="exchange-detail">
+              <p><strong>换班原因：</strong>{{ currentEvent.exchangeInfo.exchangeReason || '-' }}</p>
+              <p><strong>申请时间：</strong>{{ formatDateTime(currentEvent.exchangeInfo.createdAt) }}</p>
+            </div>
+          </template>
+        </el-alert>
+      </div>
       <el-form :model="confirmForm" :rules="confirmRules" ref="confirmFormRef" label-width="100px">
         <el-form-item label="备注" prop="customerRemarks">
           <el-input
@@ -440,6 +486,15 @@ const formatDateTime = (date) => {
   return date ? dayjs(date).format('YYYY-MM-DD HH:mm:ss') : ''
 }
 
+const getExchangeStatusText = (status) => {
+  const map = {
+    PENDING: '待审批',
+    APPROVED: '已通过',
+    REJECTED: '已驳回'
+  }
+  return map[status] || status
+}
+
 const fetchData = async () => {
   try {
     const params = {
@@ -526,9 +581,16 @@ const handleAdd = () => {
   dialogVisible.value = true
 }
 
-const handleView = (row) => {
+const handleView = async (row) => {
   isView.value = true
-  Object.assign(form, row)
+  try {
+    const response = await patrolEventApi.get(row.id)
+    const data = response.data
+    Object.assign(form, data.content || data.data || data)
+  } catch (error) {
+    console.error('获取详情失败:', error)
+    Object.assign(form, row)
+  }
   dialogVisible.value = true
 }
 
@@ -550,9 +612,17 @@ const handleSave = async () => {
   }
 }
 
-const handleConfirm = (row) => {
+const handleConfirm = async (row) => {
   confirmForm.id = row.id
   confirmForm.customerRemarks = ''
+  try {
+    const response = await patrolEventApi.get(row.id)
+    const data = response.data
+    currentEvent.value = data.content || data.data || data
+  } catch (error) {
+    console.error('获取详情失败:', error)
+    currentEvent.value = { ...row }
+  }
   confirmDialogVisible.value = true
 }
 
@@ -620,5 +690,26 @@ onMounted(() => {
 .pagination {
   margin-top: 20px;
   justify-content: flex-end;
+}
+
+.exchange-info-section {
+  margin-top: 10px;
+}
+
+.section-title {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #303133;
+}
+
+.confirm-exchange-info {
+  margin-bottom: 20px;
+}
+
+.exchange-detail p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #606266;
 }
 </style>

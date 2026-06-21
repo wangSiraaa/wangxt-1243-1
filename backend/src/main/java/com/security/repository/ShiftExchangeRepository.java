@@ -16,4 +16,6 @@ public interface ShiftExchangeRepository extends JpaRepository<ShiftExchange, UU
     List<ShiftExchange> findByRequesterId(UUID requesterId);
 
     ShiftExchange findByOriginalScheduleId(UUID originalScheduleId);
+
+    ShiftExchange findByOriginalScheduleIdAndStatus(UUID originalScheduleId, ExchangeStatus status);
 }

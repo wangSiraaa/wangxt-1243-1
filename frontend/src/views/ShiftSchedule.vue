@@ -135,10 +135,13 @@
                   >
                     {{ getShiftTypeText(schedule.shiftType) }}
                   </el-tag>
-                  <el-badge
-                    :class="getStatusBadgeClass(schedule.status)"
-                    :value="getStatusBadgeValue(schedule.status)"
-                  />
+                  <div class="header-badges">
+                    <el-tag v-if="schedule.exchangeId" type="warning" size="small" effect="plain">换</el-tag>
+                    <el-badge
+                      :class="getStatusBadgeClass(schedule.status)"
+                      :value="getStatusBadgeValue(schedule.status)"
+                    />
+                  </div>
                 </div>
                 <div class="shift-info">
                   <span class="personnel-name">{{ schedule.personnelName }}</span>
@@ -198,6 +201,12 @@
             <el-tag :type="getStatusTagType(row.status)">
               {{ getStatusText(row.status) }}
             </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="换班" width="80">
+          <template #default="{ row }">
+            <el-tag v-if="row.exchangeId" type="warning" size="small">已换班</el-tag>
+            <span v-else>-</span>
           </template>
         </el-table-column>
         <el-table-column prop="checkInTime" label="签到时间" width="160">
@@ -1140,6 +1149,12 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2px;
+}
+
+.header-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .shift-info {

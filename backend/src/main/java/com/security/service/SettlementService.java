@@ -43,6 +43,9 @@ public class SettlementService {
     @Autowired
     private PenaltyRepository penaltyRepository;
 
+    @Autowired
+    private ShiftExchangeRepository shiftExchangeRepository;
+
     private static final String SHIFT_UNIT_PRICE_KEY = "shift_unit_price";
     private static final String SETTLEMENT_NO_PREFIX = "SET";
 
@@ -218,7 +221,22 @@ public class SettlementService {
             throw new BusinessException("结算单ID不能为空");
         }
         getById(settlementId);
-        return settlementDetailRepository.findBySettlementId(settlementId);
+        List<SettlementDetail> details = settlementDetailRepository.findBySettlementId(settlementId);
+        for (SettlementDetail detail : details) {
+            loadExchangeInfo(detail);
+        }
+        return details;
+    }
+
+    private void loadExchangeInfo(SettlementDetail detail) {
+        if (detail.getScheduleId() == null) {
+            return;
+        }
+        shiftScheduleRepository.findById(detail.getScheduleId()).ifPresent(schedule -> {
+            if (schedule.getExchangeId() != null) {
+                shiftExchangeRepository.findById(schedule.getExchangeId()).ifPresent(detail::setExchangeInfo);
+            }
+        });
     }
 
     private String generateSettlementNo() {

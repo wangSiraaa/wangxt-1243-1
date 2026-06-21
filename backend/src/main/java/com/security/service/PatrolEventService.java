@@ -32,12 +32,31 @@ public class PatrolEventService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ShiftScheduleRepository shiftScheduleRepository;
+
+    @Autowired
+    private ShiftExchangeRepository shiftExchangeRepository;
+
     public PatrolEvent getById(UUID id) {
         if (id == null) {
             throw new BusinessException("巡更事件ID不能为空");
         }
-        return patrolEventRepository.findById(id)
+        PatrolEvent event = patrolEventRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("巡更事件不存在，ID: " + id));
+        loadExchangeInfo(event);
+        return event;
+    }
+
+    private void loadExchangeInfo(PatrolEvent event) {
+        if (event.getScheduleId() == null) {
+            return;
+        }
+        shiftScheduleRepository.findById(event.getScheduleId()).ifPresent(schedule -> {
+            if (schedule.getExchangeId() != null) {
+                shiftExchangeRepository.findById(schedule.getExchangeId()).ifPresent(event::setExchangeInfo);
+            }
+        });
     }
 
     public List<PatrolEvent> listByCustomerPoint(UUID customerPointId) {

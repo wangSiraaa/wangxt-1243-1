@@ -105,6 +105,7 @@ CREATE TABLE IF NOT EXISTS sec_shift_schedule (
     check_out_time TIMESTAMP,
     is_night_shift BOOLEAN DEFAULT false,
     remarks TEXT,
+    exchange_id UUID REFERENCES sec_shift_exchange(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(schedule_date, customer_point_id, shift_template_id, personnel_id)

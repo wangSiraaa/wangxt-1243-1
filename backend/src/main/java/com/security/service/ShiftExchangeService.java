@@ -35,6 +35,10 @@ public class ShiftExchangeService {
     public ShiftExchange createExchange(ShiftExchange exchange) {
         validateShiftExchange(exchange);
 
+        if (exchange.getExchangeReason() == null || exchange.getExchangeReason().trim().isEmpty()) {
+            throw new BusinessException("换班原因不能为空");
+        }
+
         ShiftSchedule originalSchedule = shiftScheduleRepository.findById(exchange.getOriginalScheduleId())
                 .orElseThrow(() -> new BusinessException("原排班不存在，ID: " + exchange.getOriginalScheduleId()));
 
@@ -98,12 +102,15 @@ public class ShiftExchangeService {
         exchange.setApprovalRemarks(remarks);
         exchange.setApprovedAt(LocalDateTime.now());
 
+        ShiftExchange savedExchange = shiftExchangeRepository.save(exchange);
+
         ShiftSchedule originalSchedule = shiftScheduleRepository.findById(exchange.getOriginalScheduleId())
                 .orElseThrow(() -> new BusinessException("原排班不存在，ID: " + exchange.getOriginalScheduleId()));
         originalSchedule.setPersonnelId(exchange.getReplacementId());
+        originalSchedule.setExchangeId(savedExchange.getId());
         shiftScheduleRepository.save(originalSchedule);
 
-        return shiftExchangeRepository.save(exchange);
+        return savedExchange;
     }
 
     @Transactional

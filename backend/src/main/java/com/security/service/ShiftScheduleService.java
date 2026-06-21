@@ -41,12 +41,19 @@ public class ShiftScheduleService {
     @Autowired
     private SystemConfigRepository systemConfigRepository;
 
+    @Autowired
+    private ShiftExchangeRepository shiftExchangeRepository;
+
     public ShiftSchedule getById(UUID id) {
         if (id == null) {
             throw new BusinessException("排班ID不能为空");
         }
-        return shiftScheduleRepository.findById(id)
+        ShiftSchedule schedule = shiftScheduleRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("排班不存在，ID: " + id));
+        if (schedule.getExchangeId() != null) {
+            shiftExchangeRepository.findById(schedule.getExchangeId()).ifPresent(schedule::setExchangeInfo);
+        }
+        return schedule;
     }
 
     public List<ShiftSchedule> listByDateRange(LocalDate startDate, LocalDate endDate) {
